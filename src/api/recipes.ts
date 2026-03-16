@@ -1,7 +1,7 @@
 import { Elysia } from "elysia";
 import { z } from "zod";
 import { db, schema } from "@/db";
-import { and, eq, like, inArray, desc, asc, sql } from "drizzle-orm";
+import { and, eq, like, inArray, desc, asc, exists } from "drizzle-orm";
 import { context } from "@/context";
 
 const Id = z.int32().min(0);
@@ -64,6 +64,14 @@ const Pagination = z.object({
   size: z.coerce.number().min(1).max(10).default(10),
 });
 
+const RecipeReadWithPagination = z.object({
+  pagination: z.object({
+    page: z.number(),
+    size: z.number(),
+  }),
+  data: RecipeRead.array(),
+});
+
 const Filters = z.object({
   name__like: z.string(),
   ingredientId: z.coerce.number().array()
@@ -118,44 +126,24 @@ export const recipesRouter = new Elysia({ prefix: "/recipes" })
     );
 
     if (query.ingredientId?.length) {
-      const ids = query.ingredientId;
-
-      const subquery = db
-        .select({
-          recipeId: schema.recipeIngredients.recipeId,
-        })
-        .from(schema.recipeIngredients)
-        .where(
-          inArray(schema.recipeIngredients.ingredientId, ids)
-        )
-        .groupBy(schema.recipeIngredients.recipeId)
-        .having(
-          sql`count(distinct ${schema.recipeIngredients.ingredientId}) = ${ids.length}`
-        );
-
       filters.push(
-        inArray(schema.recipes.id, subquery)
+        exists(
+          db.select()
+            .from(schema.recipeIngredients)
+            .where(
+              and(
+                eq(
+                  schema.recipeIngredients.recipeId,
+                  schema.recipes.id
+                ),
+                inArray(
+                  schema.recipeIngredients.ingredientId,
+                  query.ingredientId
+                ),
+              )
+            )
+        )
       );
-
-      // ----- ВАРИАНТ 2: РЕЦЕПТЫ С ЛЮБЫМ ИЗ ИНГРЕДИЕНТОВ -----
-      // filters.push(
-      //   exists(
-      //     db.select()
-      //       .from(schema.recipeIngredients)
-      //       .where(
-      //         and(
-      //           eq(
-      //             schema.recipeIngredients.recipeId,
-      //             schema.recipes.id
-      //           ),
-      //           inArray(
-      //             schema.recipeIngredients.ingredientId,
-      //             query.ingredientId
-      //           ),
-      //         )
-      //       )
-      //   )
-      // );
     }
 
     let orderBy;
@@ -183,11 +171,17 @@ export const recipesRouter = new Elysia({ prefix: "/recipes" })
       orderBy,
     });
 
-    return recipes.map(serializeRecipe);
+    return {
+      pagination: {
+        size: recipes.length,
+        page: query.page,
+      },
+      data: recipes.map(serializeRecipe)
+    };
   }, {
     query: Pagination.extend({ ...Filters.shape }),
     response: {
-      200: RecipeRead.array(),
+      200: RecipeReadWithPagination,
       400: Error,
     },
   })
