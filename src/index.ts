@@ -1,5 +1,6 @@
 import { Elysia } from "elysia";
 import { openapi } from "@elysiajs/openapi";
+import { cors } from "@elysiajs/cors";
 import { env } from "@/env";
 import { logging } from "@/logging";
 
@@ -25,8 +26,9 @@ new Elysia()
           },
         },
       },
-    })
+    }),
   )
+  .use(cors())
   .use(logging())
   .use(authController)
   .use(numbersController)
