@@ -3,6 +3,11 @@ import { bearer } from "@elysiajs/bearer";
 import { jwt } from "@elysiajs/jwt";
 import { z } from "zod";
 import { env } from "@/env";
+import { HttpError } from "@/error";
+
+const AuthSchema = z.object({
+  sub: z.string(),
+});
 
 export const context = new Elysia({ name: "context" })
   .use(bearer())
@@ -10,31 +15,40 @@ export const context = new Elysia({ name: "context" })
     jwt({
       name: "jwt",
       secret: env.JWT_SECRET,
-    })
+      exp: "7d",
+    }),
   )
+  .model({
+    error: z.object({
+      error: z.string(),
+    }),
+  })
+  .onError(({ error, set }) => {
+    if (error instanceof HttpError) {
+      set.status = error.status;
+      return { error: error.message };
+    }
+  })
   .macro("auth", {
     detail: {
-      security: [{ bearerAuth: [] }]
+      security: [{ bearerAuth: [] }],
     },
     headers: z.object({
       authorization: z.string(),
     }),
     response: {
-      401: z.object({
-        error: z.string()
-      }),
+      401: "error",
     },
     resolve: async ({ bearer, jwt, status }) => {
-      const error = status(401, { error: "Unauthorized" });
-      if (!bearer) return error;
+      const error = new HttpError(401, "Вы не авторизованы");
+      if (!bearer) throw error;
 
       const auth = await jwt.verify(bearer);
-      if (!auth) return error;
+      if (!auth) throw error;
 
-      return {
-        auth: {
-          userId: Number(auth.sub),
-        },
-      };
+      const { data } = AuthSchema.safeParse(auth);
+      if (!data) throw error;
+
+      return { auth: data };
     },
   });

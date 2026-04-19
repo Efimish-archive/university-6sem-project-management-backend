@@ -7,6 +7,6 @@ export default defineConfig({
   out: "./drizzle",
   casing: "snake_case",
   dbCredentials: {
-    url: env.DB_FILE_NAME,
+    url: env.DATABASE_URL,
   },
 });

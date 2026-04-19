@@ -12,15 +12,14 @@ import { allergensRouter } from "@/api/allergens";
 import { ingredientsRouter } from "@/api/ingredients";
 import { usersRouter } from "@/api/users";
 
-const app = new Elysia()
+new Elysia()
   .use(
     openapi({
-      // provider: "swagger-ui",
-      path: "/docs",
+      path: "",
       documentation: {
         info: {
-          title: "Бэкенд разработка",
-          version: "0.0.1",
+          title: "Управление IT проектами",
+          version: "0.0.0",
         },
         components: {
           securitySchemes: {
