@@ -23,10 +23,12 @@ export const context = new Elysia({ name: "context" })
       error: z.string(),
     }),
   })
-  .onError(({ error, set }) => {
-    if (error instanceof HttpError) {
-      set.status = error.status;
-      return { error: error.message };
+  .error({ HttpError })
+  .onError(({ code, error, status }) => {
+    if (code === "HttpError") {
+      return status(error.status, {
+        error_msg: error.message + "_handled",
+      });
     }
   })
   .macro("auth", {
@@ -39,7 +41,7 @@ export const context = new Elysia({ name: "context" })
     response: {
       401: "error",
     },
-    resolve: async ({ bearer, jwt, status }) => {
+    resolve: async ({ bearer, jwt }) => {
       const error = new HttpError(401, "Вы не авторизованы");
       if (!bearer) throw error;
 
