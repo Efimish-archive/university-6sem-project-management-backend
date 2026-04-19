@@ -1,6 +1,5 @@
 import { Elysia } from "elysia";
 import { openapi } from "@elysiajs/openapi";
-import { staticPlugin } from "@elysiajs/static";
 import { env } from "@/env";
 import { logging } from "@/logging";
 
@@ -28,7 +27,6 @@ new Elysia()
       },
     })
   )
-  .use(staticPlugin())
   .use(logging())
   .use(authController)
   .use(numbersController)
