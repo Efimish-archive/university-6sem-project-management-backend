@@ -122,7 +122,7 @@ export const numbersController = new Elysia({ prefix: "/numbers" })
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch("http://100.91.68.15:8000/predict", {
+      const response = await fetch("http://127.0.0.1:8001/predict", {
         method: "POST",
         body: formData,
       });
