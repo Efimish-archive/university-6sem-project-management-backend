@@ -126,15 +126,31 @@ export const numbersController = new Elysia({ prefix: "/numbers" })
         method: "POST",
         body: formData,
       });
-      const json = (await response.json()) as {
-        number: string;
-      };
-      return json;
+      const number = (await response.json()).number as string;
+      const dbNumber = await db.query.numbers.findFirst({
+        where: eq(schema.numbers.number, number),
+        with: {
+          user: true,
+        },
+      });
+      if (!dbNumber) return { number, isInDb: false };
+      return { number, isInDb: true, info: dbNumber };
     },
     {
       body: ImageSchema,
       response: z.object({
         number: z.string(),
+        isInDb: z.boolean(),
+        info: z
+          .object({
+            car: z.string(),
+            user: z.object({
+              firstName: z.string(),
+              lastName: z.string(),
+              middleName: z.string(),
+            }),
+          })
+          .optional(),
       }),
     },
   );
