@@ -239,3 +239,40 @@ await db.insert(schema.admins).values({
   passwordHash: await argon2.hash("admin"),
 });
 console.log("seeded admins");
+
+// REAL FAKE !!!
+
+const realFakeNumbersAndPeople = new Map(
+  Object.entries({
+    "A001CX61": createFakeUser(),
+    "A157EA122": createFakeUser(),
+    "A734BP147": createFakeUser(),
+    "B557TT164": createFakeUser(),
+    "C007YK77": createFakeUser(),
+    "C486AP47": createFakeUser(),
+    "E030BC164": createFakeUser(),
+    "E274TP197": createFakeUser(),
+    "E469AT797": createFakeUser(),
+    "E788EO76": createFakeUser(),
+  }),
+);
+
+for (const realFakeNumberAndPerson of realFakeNumbersAndPeople.entries()) {
+  const [dbUser] = await db
+    .insert(schema.users)
+    .values(realFakeNumberAndPerson[1])
+    .returning();
+  const [dbNumber] = await db
+    .insert(schema.numbers)
+    .values({
+      number: realFakeNumberAndPerson[0],
+      userId: dbUser.id,
+      car:
+        fakerRU.vehicle.color() +
+        " " +
+        fakerRU.vehicle.manufacturer() +
+        " " +
+        fakerRU.vehicle.model(),
+    })
+    .returning();
+}
