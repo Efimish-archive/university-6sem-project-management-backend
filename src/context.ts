@@ -1,4 +1,4 @@
-import { Elysia } from "elysia";
+import { Elysia, StatusMap } from "elysia";
 import { bearer } from "@elysiajs/bearer";
 import { jwt } from "@elysiajs/jwt";
 import { z } from "zod";
@@ -21,7 +21,7 @@ export const context = new Elysia({ name: "context" })
   .model({
     error: z.object({
       error: z.string(),
-      code: z.number(),
+      code: z.enum(StatusMap),
     }),
   })
   .macro("auth", {
