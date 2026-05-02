@@ -119,15 +119,22 @@ export const numbersController = new Elysia({ prefix: "/numbers" })
   .post(
     "/check",
     async ({ body: { file } }) => {
-      const imageData = await file.bytes();
-      return {
-        message: `Вы загрузили ${imageData.byteLength} байт. Мы ничего не будем с ними делать.`,
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("http://100.91.68.15:8000/predict", {
+        method: "POST",
+        body: formData,
+      });
+      const json = (await response.json()) as {
+        number: string;
       };
+      return json;
     },
     {
       body: ImageSchema,
       response: z.object({
-        message: z.string(),
+        number: z.string(),
       }),
     },
   );
