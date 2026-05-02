@@ -1,12 +1,28 @@
-import type { StatusMap } from "elysia";
+import { StatusMap } from "elysia";
 
 type HttpStatus = keyof StatusMap | StatusMap[keyof StatusMap];
 
 export class HttpError extends Error {
-  constructor(
-    public readonly status: HttpStatus,
-    public readonly message: string,
-  ) {
+  public readonly message: string;
+  public readonly status: number;
+
+  constructor(status: HttpStatus, message: string) {
     super(message);
+    this.message = message;
+
+    if (typeof status === "number") this.status = status;
+    else this.status = StatusMap[status];
+  }
+
+  toResponse() {
+    return Response.json(
+      {
+        error: this.message,
+        code: this.status,
+      },
+      {
+        status: this.status,
+      },
+    );
   }
 }

@@ -21,15 +21,8 @@ export const context = new Elysia({ name: "context" })
   .model({
     error: z.object({
       error: z.string(),
+      code: z.number(),
     }),
-  })
-  .error({ HttpError })
-  .onError(({ code, error, status }) => {
-    if (code === "HttpError") {
-      return status(error.status, {
-        error_msg: error.message + "_handled",
-      });
-    }
   })
   .macro("auth", {
     detail: {
