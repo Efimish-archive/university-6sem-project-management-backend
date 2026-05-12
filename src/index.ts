@@ -5,6 +5,7 @@ import { env } from "@/env";
 import { logging } from "@/logging";
 
 import { authController } from "@/api/auth";
+import { usersController } from "@/api/users";
 import { numbersController } from "@/api/numbers";
 
 new Elysia()
@@ -31,6 +32,7 @@ new Elysia()
   .use(cors())
   .use(logging())
   .use(authController)
+  .use(usersController)
   .use(numbersController)
   .listen(env.PORT);
 
