@@ -28,9 +28,6 @@ export const context = new Elysia({ name: "context" })
     detail: {
       security: [{ bearerAuth: [] }],
     },
-    headers: z.object({
-      authorization: z.string(),
-    }),
     response: {
       401: "error",
     },
