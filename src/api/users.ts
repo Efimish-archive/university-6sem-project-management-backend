@@ -6,7 +6,6 @@ import { eq } from "drizzle-orm";
 import { HttpError } from "@/error";
 
 const PostUserSchema = z.object({
-  id: z.number(),
   firstName: z.string(),
   lastName: z.string(),
   middleName: z.string(),
