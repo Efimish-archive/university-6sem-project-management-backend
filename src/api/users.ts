@@ -15,6 +15,10 @@ const GetUserSchema = PostUserSchema.extend({
   id: z.number(),
 });
 
+const ParamsIdSchema = z.object({
+  id: z.coerce.number(),
+});
+
 export const usersController = new Elysia({ prefix: "/users" })
   .use(context)
   .get(
@@ -78,7 +82,7 @@ export const usersController = new Elysia({ prefix: "/users" })
       return dbUser;
     },
     {
-      params: z.object({ id: z.number() }),
+      params: ParamsIdSchema,
       body: GetUserSchema.partial(),
       response: {
         200: GetUserSchema,
@@ -98,7 +102,7 @@ export const usersController = new Elysia({ prefix: "/users" })
       return dbUser;
     },
     {
-      params: z.object({ id: z.number() }),
+      params: ParamsIdSchema,
       response: {
         200: GetUserSchema,
         404: "error",
