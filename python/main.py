@@ -24,7 +24,7 @@ app = FastAPI()
 session = ort.InferenceSession("VehicleNumberRecognizer.onnx")
 
 trans=transforms.Compose([
-    transforms.Resize((64,128)),
+    transforms.Resize((128,256)),
     transforms.ToTensor()
 ])
 
